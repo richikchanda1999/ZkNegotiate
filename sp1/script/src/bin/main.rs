@@ -16,8 +16,30 @@ use fibonacci_lib::PublicValuesStruct;
 use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
-pub const FIBONACCI_ELF: &[u8] = include_elf!("fibonacci-program");
+pub const FIBONACCI_ELF: &[u8] = include_elf!("sp1-negotiate");
+use serde_json;
 
+struct AuctionBids{
+    min_price: u64,
+    max_price: u64,
+}
+struct AuctionArena{
+    bids: Vec<AuctionBids>,
+}
+
+const data = r#"
+{
+    "bids": [
+        {
+            "min_price": 50,
+            "max_price": 100,
+        },
+        {
+            "min_price": 30,
+            "max_price": 70,
+        }
+    ]
+}"#;
 /// The arguments for the command.
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -28,8 +50,11 @@ struct Args {
     #[clap(long)]
     prove: bool,
 
-    #[clap(long, default_value = "20")]
-    n: u32,
+    #[clap(long, default_value = serde_json::from_str<AuctionArena>(&data).unwrap_or_else(|error|{
+            panic!("Error decoding value to Object:{}",error);
+        });
+    )]
+    n: AuctionArena,
 }
 
 fn main() {
@@ -58,7 +83,6 @@ fn main() {
         let (output, report) = client.execute(FIBONACCI_ELF, stdin).run().unwrap();
         println!("Program executed successfully.");
 
-        // Read the output.
         let decoded = PublicValuesStruct::abi_decode(output.as_slice(), true).unwrap();
         let PublicValuesStruct { n, a, b } = decoded;
         println!("n: {}", n);

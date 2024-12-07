@@ -1,20 +1,21 @@
-
+mod strategy {
+    pub mod negotiate;
+}
 use crate::strategy::negotiate::negotiate;
-pub mod negotiate;
 
 pub struct AuctionArena{
-    bids: Vec<AuctionBids>,
+    pub bids: Vec<AuctionBids>,
 }
 
 pub struct AuctionBids{
-    min_price: u64,
-    max_price: u64,
+    pub min_price: u64,
+    pub max_price: u64,
 }
 pub struct Auctioneer{
-    num_players: u8,
+    pub num_players: u8,
 }
 
-pub fn negotiateStrategy(auctioneer: Auctioneer, auctioneer_arena: AuctionArena) -> u64 {
+pub fn negotiate_strategy(auctioneer: Auctioneer, auction_arena: AuctionArena) -> u64 {
 
     let num_players = auctioneer.num_players;
 

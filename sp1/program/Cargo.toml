@@ -1,9 +1,11 @@
 [package]
 version = "0.1.0"
-name = "fibonacci-program"
+name = "sp1-negotiate"
 edition = "2021"
 
 [dependencies]
 alloy-sol-types = { workspace = true }
-sp1-zkvm = "3.0.0-rc4"
-fibonacci-lib = { path = "../lib" }
+sp1-zkvm = "3.4.0"
+negotiate = { path = "../../negotiate" }
+serde = "1.0.215"
+

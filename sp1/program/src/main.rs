@@ -1,30 +1,80 @@
-//! A simple program that takes a number `n` as input, and writes the `n-1`th and `n`th fibonacci
-//! number as an output.
-
-// These two lines are necessary for the program to properly compile.
-//
-// Under the hood, we wrap your main function with some extra code so that it behaves properly
-// inside the zkVM.
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use alloy_sol_types::SolType;
-use fibonacci_lib::{fibonacci, PublicValuesStruct};
+use serde::{Serialize, Deserialize};
+// use std::fmt::{Display};
+
+use negotiate as negotiation;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct AuctionBids {
+    pub min_price: u64,
+    pub max_price: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
+struct Auctioneer {
+    pub num_players: u8,
+    pub strategy: Strategy,
+}
+
+// adapters
+impl From<Auctioneer> for negotiation::Auctioneer {
+    fn from(auctioneer: Auctioneer) -> Self {
+        negotiation::Auctioneer {
+            num_players: auctioneer.num_players,
+        }
+    }
+}
+
+impl From<AuctionBids> for negotiation::AuctionBids {
+    fn from(bid: AuctionBids) -> Self {
+        negotiation::AuctionBids {
+            min_price: bid.min_price,
+            max_price: bid.max_price,
+        }
+    }
+}
+
+impl From<AuctionArena> for negotiation::AuctionArena {
+    fn from(arena: AuctionArena) -> Self {
+        negotiation::AuctionArena {
+            bids: arena.bids.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
+enum Strategy {
+    Auction,
+    Negotiate,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct AuctionArena {
+    bids: Vec<AuctionBids>,
+}
 
 pub fn main() {
     // Read an input to the program.
     //
     // Behind the scenes, this compiles down to a custom system call which handles reading inputs
     // from the prover.
-    let n = sp1_zkvm::io::read::<u32>();
+    let auctioneer: Auctioneer = sp1_zkvm::io::read::<Auctioneer>();
+    sp1_zkvm::io::commit(&auctioneer);
 
-    // Compute the n'th fibonacci number using a function from the workspace lib crate.
-    let (a, b) = fibonacci(n);
+    let _num_players: u8 = auctioneer.num_players;
+    let _strategy: Strategy = auctioneer.strategy;
+
+    let strategy_function = negotiation::negotiate_strategy; // Adjusted the naming convention
+
+    let auction_arena: AuctionArena = sp1_zkvm::io::read::<AuctionArena>();
+
+    let amount = strategy_function(
+        negotiation::Auctioneer::from(auctioneer),
+        negotiation::AuctionArena::from(auction_arena),
+    );
 
     // Encode the public values of the program.
-    let bytes = PublicValuesStruct::abi_encode(&PublicValuesStruct { n, a, b });
-
-    // Commit to the public values of the program. The final proof will have a commitment to all the
-    // bytes that were committed to.
-    sp1_zkvm::io::commit_slice(&bytes);
+    sp1_zkvm::io::commit(&amount);
 }
