@@ -21,6 +21,9 @@ pub fn negotiate_strategy(auctioneer: Auctioneer, auction_arena: AuctionArena) -
 
     assert_eq!(auction_arena.bids.len() as u8,num_players);
 
+    println!("{:?}", num_players);
+    println!("{:?}", auction_arena.bids.len());
+
     assert!(num_players>=2);
     let mut overflow_min = auction_arena.bids.get(0).unwrap().min_price;
     let mut overflow_max = auction_arena.bids.get(0).unwrap().max_price;
