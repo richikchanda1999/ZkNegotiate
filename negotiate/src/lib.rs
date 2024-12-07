@@ -1,4 +1,7 @@
 
+use crate::strategy::negotiate::negotiate;
+pub mod negotiate;
+
 pub struct AuctionArena{
     bids: Vec<AuctionBids>,
 }
