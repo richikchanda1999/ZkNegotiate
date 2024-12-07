@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@coinbase/cdp-langchain": "^0.0.8",
+    "@langchain/langgraph": "^0.2.27",
+    "@langchain/openai": "^0.3.14"
+  }
+}
