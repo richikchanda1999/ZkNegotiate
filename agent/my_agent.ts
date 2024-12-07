@@ -32,20 +32,25 @@ async function getCdpTool() {
     }
   }
 
-  // Configure CDP AgentKit
-  const config = {
+  // Initialize CDP AgentKit
+  const agentkit = await CdpAgentkit.configureWithWallet({
     cdpWalletData: walletDataStr || undefined,
     networkId: process.env.NETWORK_ID || "base-sepolia",
-  };
-
-  // Initialize CDP AgentKit
-  const agentkit = await CdpAgentkit.configureWithWallet(config);
+  });
 
   // Initialize CDP AgentKit Toolkit and get tools
   const cdpToolkit = new CdpToolkit(agentkit);
   const cdptools = cdpToolkit.getTools();
 
-  return { agentkit, cdptools };
+  return {
+    agentkit,
+    cdptools: cdptools.filter(
+      (tool) =>
+        tool.getName() === "get_wallet_details" ||
+        tool.getName() === "get_balance" ||
+        tool.getName() === "request_faucet_funds"
+    ),
+  };
 }
 
 // Define the function that determines whether to continue or not
