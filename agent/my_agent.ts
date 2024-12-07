@@ -68,8 +68,7 @@ async function callModel(model, state: typeof MessagesAnnotation.State) {
     let lastMessage = state.messages[state.messages.length - 1];
     if (lastMessage.getType() === "tool") {
       let message = lastMessage as ToolMessage;
-      if (message.name === "store_range")
-        return { messages: state.messages };
+      if (message.name === "store_range") return { messages: state.messages };
     }
   }
 
@@ -89,6 +88,11 @@ async function main() {
   const model = new ChatOpenAI({
     model: "gpt-3.5-turbo",
     temperature: 0,
+    modelKwargs: {
+      response_format: {
+        type: "json_object",
+      },
+    },
   }).bindTools(tools);
 
   // Define a new graph
@@ -143,12 +147,12 @@ async function main() {
         let message = lastMessage as ToolMessage;
         let parsedOutput = JSON.parse(message.content as string);
 
-        console.log('Type: ', 'tool')
+        console.log("Type: ", "tool");
         console.log(parsedOutput);
-      } else if (lastMessage.getType() === 'ai') {
+      } else if (lastMessage.getType() === "ai") {
         let message = lastMessage as AIMessage;
-        console.log('Type: ', 'ai')
-        console.log(message.content)
+        console.log("Type: ", "ai");
+        console.log(message.content);
       }
     }
   } catch (error) {
