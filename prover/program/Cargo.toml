@@ -1,0 +1,11 @@
+[package]
+version = "0.1.0"
+name = "auction-arena"
+edition = "2021"
+
+[dependencies]
+alloy-sol-types = { workspace = true }
+sp1-zkvm = "3.0.0-rc4"
+fibonacci-lib = { path = "../lib" }
+serde = "1.0.215"
+sp1-sdk = "3.4.0"
