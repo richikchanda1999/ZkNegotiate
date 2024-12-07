@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = { version = "1.2.0", default-features = false, features = ['std'] }
+serde = "1.0.215"
+negotiate={path = "../../../negotiate"}
