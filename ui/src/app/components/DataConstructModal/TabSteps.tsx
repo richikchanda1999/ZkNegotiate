@@ -2,9 +2,9 @@ import React from 'react';
 import { useSteps } from './context';
 
 const steps = [
-  { id: 1, label: "Step 1" },
-  { id: 2, label: "Step 2" },
-  { id: 3, label: "Step 3" },
+  { id: 1, label: "Step 1: Negotiation ID" },
+  { id: 2, label: "Step 2: Enter range" },
+  { id: 3, label: "Step 3: Upload to Walrus" },
 ];
 
 export default function TabSteps() {

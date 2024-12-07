@@ -1,4 +1,0 @@
-**/node_modules
-
-.env.development
-./wallet_data.txt

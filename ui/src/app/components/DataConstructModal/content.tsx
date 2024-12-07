@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSteps } from './context';
 import TabSteps from './TabSteps';
 import Step1View from './StepsViews/Step1View';
@@ -11,17 +11,7 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose }: ModalProps) {
-  const { currentStep, setCurrentStep, jsonData, setJsonData } = useSteps();
-
-  // Move state updates into a useEffect
-  useEffect(() => {
-    if (currentStep === 2 && !jsonData.step2Data) {
-      setJsonData((prev) => ({ ...prev, step2Data: "Additional data from step 2" }));
-    }
-    if (currentStep === 3 && !jsonData.step3Data) {
-      setJsonData((prev) => ({ ...prev, step3Data: "Additional data from step 3" }));
-    }
-  }, [currentStep, jsonData, setJsonData]);
+  const { currentStep, setCurrentStep, jsonData } = useSteps();
 
   const renderRightContent = () => {
     switch (currentStep) {
@@ -39,7 +29,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 text-gray-800">
       <div className="bg-white rounded-lg shadow-lg w-3/4 h-3/4 flex overflow-hidden">
         {/* Left Section: Steps + JSON */}
         <div className="w-2/5 border-r border-gray-200 flex flex-col">

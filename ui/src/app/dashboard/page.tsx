@@ -1,20 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
-'use client'
+"use client";
 
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import DataConstructModal from "../components/DataConstructModal";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { isConnected } = useAccount();
+  const router = useRouter();
+
+  useLayoutEffect(() => {
+    if (!isConnected) router.replace("/");
+  }, [isConnected]);
+
+  useLayoutEffect(() => {}, []);
   return (
     <div className="flex h-full overflow-y-auto bg-gray-50 py-10 px-4 flex-col items-center">
       {/* Heading and Description */}
       <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">
-        Welcome to the Dashboard
+        Verifiable Negotiation
       </h1>
       <p className="text-gray-600 text-center max-w-md mb-10">
-        Here is a short description about the dashboard. Explore the sections
-        below to learn more.
+        A negotiation agent that enables two or more parties to negotiate deals
+        or agreements while keeping their preferences, constraints, and
+        sensitive data private.
       </p>
 
       {/* Two Columns */}
@@ -22,44 +34,47 @@ export default function Dashboard() {
         {/* Column One */}
         <div className="flex-1 bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
           <img
-            src="https://via.placeholder.com/300x200"
+            src="/middle_ground.webp"
             alt="Column One Placeholder"
-            className="w-full h-40 object-cover rounded mb-4"
+            className="object-cover rounded mb-4"
           />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Column One
+            Finding Common Ground
           </h2>
           <p className="text-gray-500 mb-4 text-center">
-            A brief description for the first section. This might contain
-            details or highlights about some features.
+            Negotiating Without Compromising Privacy
           </p>
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition duration-300" onClick={() => {
-            setIsModalOpen(true)
-          }}>
-            Learn More
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition duration-300"
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          >
+            Start
           </button>
         </div>
 
         {/* Column Two */}
         <div className="flex-1 bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
           <img
-            src="https://via.placeholder.com/300x200"
+            src="/unified_consensus.webp"
             alt="Column Two Placeholder"
-            className="w-full h-40 object-cover rounded mb-4"
+            className="object-cover rounded mb-4"
           />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Column Two
+            Unified Consensus
           </h2>
           <p className="text-gray-500 mb-4 text-center">
-            A brief description for the second section. This section might
-            contain other important insights.
+            Achieving Agreement with Complete Privacy
           </p>
           <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition duration-300">
-            Learn More
+            Start
           </button>
         </div>
       </div>
-      <DataConstructModal isModalOpen={isModalOpen} onClose={() => {}} />
+      <DataConstructModal isModalOpen={isModalOpen} onClose={() => {
+        setIsModalOpen(false)
+      }} />
     </div>
   );
 }
