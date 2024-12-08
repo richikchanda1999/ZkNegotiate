@@ -17,13 +17,13 @@ struct AuctionArena{
     bids: Vec<AuctionBids>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 struct Auctioneer {
     pub num_players: u8,
     pub strategy: Strategy,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 enum Strategy {
     Auction,
     Negotiate,
@@ -32,12 +32,12 @@ enum Strategy {
 #[derive(Serialize, Deserialize, Debug)]
 struct Inputs{
     public_input: Auctioneer,
-    public_output: AuctionArena,
+    private_input: AuctionArena,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Outputs{
-    public_input: Auctioneer,
+pub struct Outputs{
     public_output: u64,
+    public_input: Auctioneer,
 }
 
 fn main() {
@@ -46,9 +46,9 @@ fn main() {
 
     let auctioneeer_input: Auctioneer = Auctioneer {
         num_players: 2,
-        strategy: Strategy::Negotiate,
+        strategy: Strategy::Negotiate
     };
-    let auction_input: AuctionArena = AuctionArena {
+    let auction_input: AuctionArena = AuctionArena { // private_input
         bids: vec![AuctionBids{
             min_price: 30,
             max_price: 70,
@@ -61,8 +61,9 @@ fn main() {
 
     let auction_val: Inputs = Inputs {
         public_input: auctioneeer_input,
-        public_output: auction_input,
+        private_input: auction_input,
     };
+    println!("Inputs: {:?}",auction_val);
 
     let env = ExecutorEnv::builder().write(&auction_val).unwrap().build().unwrap();
 
@@ -73,7 +74,7 @@ fn main() {
 
     let public_data: Outputs = receipt.journal.decode().unwrap();
 
-    println!("{:?}", public_data);
+    println!("Outputs: {:?}", public_data);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.

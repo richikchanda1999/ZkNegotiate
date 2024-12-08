@@ -18,14 +18,17 @@ struct Auctioneer {
 // adapters
 impl From<Auctioneer> for negotiation::Auctioneer {
     fn from(auctioneer: Auctioneer) -> Self {
+        println!("in first adapter: {:?}",auctioneer);
         negotiation::Auctioneer {
             num_players: auctioneer.num_players,
+            strategy: negotiation::Strategy::Negotiate,
         }
     }
 }
 
 impl From<AuctionBids> for negotiation::AuctionBids {
     fn from(bid: AuctionBids) -> Self {
+        println!("in second adapter: {:?}",bid);
         negotiation::AuctionBids {
             min_price: bid.min_price,
             max_price: bid.max_price,
@@ -35,6 +38,7 @@ impl From<AuctionBids> for negotiation::AuctionBids {
 
 impl From<AuctionArena> for negotiation::AuctionArena {
     fn from(arena: AuctionArena) -> Self {
+        println!("in third adapter: {:?}",arena);
         negotiation::AuctionArena {
             bids: arena.bids.into_iter().map(Into::into).collect(),
         }
@@ -54,15 +58,15 @@ struct AuctionArena {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Inputs{
-    private_input: AuctionArena,
     public_input: Auctioneer,
+    private_input: AuctionArena,
 }
 
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Outputs{
-    public_input: Auctioneer,
     public_output: u64,
+    public_input: Auctioneer,
 }
 
 pub fn main() {
@@ -73,22 +77,19 @@ pub fn main() {
     let auction_inputs: Inputs = env::read::<Inputs>();
     let auctioneer = auction_inputs.public_input;
     let auction_arena = auction_inputs.private_input;
-    env::commit(&auctioneer);
 
 
     let strategy_function = negotiation::negotiate_strategy; // Adjusted the naming convention
 
-
-    let auctioneer_clone = auctioneer.clone();
-    let amount = strategy_function(
+    let amount:u64 = strategy_function(
         negotiation::Auctioneer::from(auctioneer),
         negotiation::AuctionArena::from(auction_arena),
     );
 
-    let output: Outputs = Outputs {
-        public_input: auctioneer_clone,
-        public_output: amount,
-    };
+    println!("{:?}",amount);
     // Encode the public values of the program.
-    env::commit::<Outputs>(&output);
+    env::commit::<Outputs>(&Outputs {
+        public_output: amount,
+        public_input: auctioneer,
+    });
 }
