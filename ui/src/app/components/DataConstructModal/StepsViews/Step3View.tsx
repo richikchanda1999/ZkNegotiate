@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useSteps } from "../context";
-import { useAccount } from "wagmi";
+import { useAccount, useSignTypedData } from "wagmi";
 
 const PUBLISHER = "https://publisher.walrus-testnet.walrus.space";
 
@@ -44,40 +44,76 @@ const getBlobId = (result: any) => {
 export default function Step3View() {
   const { jsonData, negotiationID, option } = useSteps();
   const [loading, setLoading] = useState(false);
-  const [uploadDecision, setUploadDecision] = useState<"pending" | "yes" | "no">("pending");
+  const [uploadDecision, setUploadDecision] = useState<
+    "pending" | "yes" | "no"
+  >("pending");
   const [uploaded, setUploaded] = useState(false);
   const [finalBlobId, setFinalBlobId] = useState<string | null>(null);
 
   const { address } = useAccount();
-  const key = useMemo(() => `${address}-my-blob-ids`, [address]);
+  const { signTypedDataAsync } = useSignTypedData();
 
   const _upload = useCallback(async () => {
     setLoading(true);
     const res = await upload(JSON.stringify(jsonData));
     if (res) {
       const blobId = getBlobId(res);
+      const name =
+        option === "create" ? "initNegotiation" : "updateNegotiation";
 
-      // Handle blob IDs as before
-      const blobIdsStr = localStorage.getItem(key);
-      let blobIds = JSON.parse(blobIdsStr === null ? "[]" : blobIdsStr) as Array<string>;
+      // Get rollup config from API
+      const config = await fetch("http://localhost:6060/get_config", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+        headers: {
+          "Content-Type": "application/json", // Ensure the server recognizes the body as JSON
+        },
+      });
+      const configData = await config.json();
 
-      if (option === "enter") {
-        blobIds = blobIds.filter((id) => id !== negotiationID);
-      }
-      blobIds.push(blobId);
-      localStorage.setItem(key, JSON.stringify(blobIds));
+      const inputs =
+        option === "create"
+          ? { address, blobId }
+          : { address, oldBlobId: negotiationID, newBlobId: blobId };
+      const { domain, types } = configData;
+      // Sign data
+      const signature = await signTypedDataAsync({
+        domain,
+        types,
+        primaryType: "Action",
+        message: { name, inputs },
+      });
+
+      // Send to rollup
+      const rollupResult = await fetch(`http://localhost:6060/${name}`, {
+        method: "POST",
+        body: JSON.stringify({
+          signature,
+          sender: address,
+          inputs,
+        }),
+        headers: {
+          "Content-Type": "application/json", // Ensure the server recognizes the body as JSON
+        },
+      });
+
+      const rollupResultJson = await rollupResult.json();
+
+      console.log({ rollupResultJson });
 
       setFinalBlobId(blobId);
       setUploaded(true);
     }
     setLoading(false);
-  }, [jsonData, negotiationID, option, key]);
+  }, [jsonData, address]);
 
   return (
     <div className="p-4">
       {uploadDecision === "pending" && !uploaded && !loading && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Step 3: Upload Confirmation</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Step 3: Upload Confirmation
+          </h2>
           <p>Do you want to upload the data to Walrus?</p>
           <div className="mt-4 flex space-x-4">
             <button
@@ -119,8 +155,9 @@ export default function Step3View() {
           </h2>
           <p>Uploaded data to Walrus successfully!</p>
           <p className="mt-4 font-medium">
-            Here is your negotiation ID: <span className="text-blue-600">{finalBlobId}</span>.  
-            Share it with the person you want to negotiate with.
+            Here is your negotiation ID:{" "}
+            <span className="text-blue-600">{finalBlobId}</span>. Share it with
+            the person you want to negotiate with.
           </p>
         </div>
       )}
