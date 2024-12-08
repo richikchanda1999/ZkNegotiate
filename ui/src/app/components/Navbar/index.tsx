@@ -5,14 +5,18 @@ import Link from "next/link";
 import React from "react";
 import LogoutButton from "./LogoutButton";
 import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { address, isConnected } = useAccount()
+  const router = useRouter()
 
   return (
     <nav className="w-full bg-white shadow p-4 flex items-center relative h-16">
       {/* Left Section: Icon and Product Name */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 cursor-pointer" onClick={() => {
+        router.replace('/')
+      }}>
         {/* Replace with your own icon/image */}
         <img
           src="/negotiate.webp"
@@ -24,7 +28,6 @@ export default function Navbar() {
         </span>
       </div>
 
-      {/* Center: Ethereum Address */}
       {isConnected && <div className="absolute left-1/2 -translate-x-1/2 text-gray-700 text-sm">
         {address}
       </div>
