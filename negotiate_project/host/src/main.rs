@@ -72,6 +72,7 @@ fn main() {
     let prover = default_prover();
     let receipt = prover.prove(env, NEGOTIATE_GUEST_ELF).unwrap().receipt;
 
+    println!("receipt: {:?}", receipt);
     let public_data: Outputs = receipt.journal.decode().unwrap();
 
     println!("Outputs: {:?}", public_data);
